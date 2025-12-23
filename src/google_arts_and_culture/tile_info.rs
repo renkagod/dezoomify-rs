@@ -95,17 +95,17 @@ fn decode_html_entities(text: &str) -> String {
             if let Some(stripped) = entity.strip_prefix('#') {
                 if let Some(hex_stripped) = entity.strip_prefix("#x") {
                     // Hexadecimal
-                    if let Ok(code) = u32::from_str_radix(hex_stripped, 16) {
-                        if let Some(ch) = std::char::from_u32(code) {
-                            return ch.to_string();
-                        }
+                    if let Ok(code) = u32::from_str_radix(hex_stripped, 16)
+                        && let Some(ch) = std::char::from_u32(code)
+                    {
+                        return ch.to_string();
                     }
                 } else {
                     // Decimal
-                    if let Ok(code) = stripped.parse::<u32>() {
-                        if let Some(ch) = std::char::from_u32(code) {
-                            return ch.to_string();
-                        }
+                    if let Ok(code) = stripped.parse::<u32>()
+                        && let Some(ch) = std::char::from_u32(code)
+                    {
+                        return ch.to_string();
                     }
                 }
             }

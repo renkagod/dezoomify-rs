@@ -89,8 +89,7 @@ impl TilesRect for ZoomifyLevel {
         let url_with_trailing_slash = format!("{}/", self.base_url);
         let path = url_with_trailing_slash
             .split('/')
-            .filter(|s| !s.is_empty())
-            .next_back()
+            .rfind(|s| !s.is_empty())
             .unwrap_or("zoomify_image");
 
         Some(path.to_string())

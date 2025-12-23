@@ -22,10 +22,10 @@ impl IiifLabel {
             IiifLabel::String(s) if !s.is_empty() => Some(s.clone()),
             IiifLabel::String(_) => None, // Empty string
             IiifLabel::Map(map) => {
-                if let Some(en_labels) = map.get("en") {
-                    if let Some(first_en) = en_labels.first().filter(|s| !s.is_empty()) {
-                        return Some(first_en.clone());
-                    }
+                if let Some(en_labels) = map.get("en")
+                    && let Some(first_en) = en_labels.first().filter(|s| !s.is_empty())
+                {
+                    return Some(first_en.clone());
                 }
                 // Fallback to the first non-empty label in the first language found
                 map.values()
@@ -47,10 +47,10 @@ pub struct MetadataEntry {
 impl MetadataEntry {
     /// Get the metadata title if this entry is a title field
     pub fn get_title(&self) -> Option<String> {
-        if let Some(label) = self.label.get_english_or_first() {
-            if label.to_lowercase() == "title" {
-                return self.value.get_english_or_first();
-            }
+        if let Some(label) = self.label.get_english_or_first()
+            && label.to_lowercase() == "title"
+        {
+            return self.value.get_english_or_first();
         }
         None
     }

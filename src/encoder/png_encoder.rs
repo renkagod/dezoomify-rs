@@ -99,17 +99,17 @@ impl Encoder for PngEncoder {
             let icc_profile = tile.icc_profile.as_ref();
             let exif_metadata = tile.exif_metadata.as_ref();
 
-            if icc_profile.is_some() {
+            if let Some(profile) = icc_profile {
                 log::debug!(
                     "Using ICC profile from first tile (size: {} bytes)",
-                    icc_profile.unwrap().len()
+                    profile.len()
                 );
             }
 
-            if exif_metadata.is_some() {
+            if let Some(exif) = exif_metadata {
                 log::debug!(
                     "Using EXIF metadata from first tile (size: {} bytes)",
-                    exif_metadata.unwrap().len()
+                    exif.len()
                 );
             }
 

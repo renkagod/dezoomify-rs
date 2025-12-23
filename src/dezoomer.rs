@@ -44,7 +44,7 @@ pub struct DezoomerInputWithContents<'a> {
 }
 
 impl DezoomerInput {
-    pub fn with_contents(&self) -> Result<DezoomerInputWithContents, DezoomerError> {
+    pub fn with_contents(&self) -> Result<DezoomerInputWithContents<'_>, DezoomerError> {
         match &self.contents {
             PageContents::Unknown => Err(DezoomerError::NeedsData {
                 uri: self.uri.clone(),

@@ -194,10 +194,10 @@ pub fn default_headers() -> HashMap<String, String> {
 pub fn resolve_relative(base: &str, path: &str) -> String {
     if Url::parse(path).is_ok() {
         return path.to_string();
-    } else if let Ok(url) = Url::parse(base) {
-        if let Ok(r) = url.join(path) {
-            return r.to_string();
-        }
+    } else if let Ok(url) = Url::parse(base)
+        && let Ok(r) = url.join(path)
+    {
+        return r.to_string();
     }
     let mut res = PathBuf::from(base.rsplitn(2, '/').last().unwrap_or_default());
     res.push(path);

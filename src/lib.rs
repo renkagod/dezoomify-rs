@@ -161,10 +161,10 @@ fn choose_level(mut levels: Vec<ZoomLevel>, args: &Arguments) -> Result<ZoomLeve
                 return Ok(levels.swap_remove(actual_level));
             }
 
-            if let Some(best_size) = args.best_size(levels.iter().filter_map(|l| l.size_hint())) {
-                if let Some(pos) = find_level_with_size(&levels, best_size) {
-                    return Ok(levels.swap_remove(pos));
-                }
+            if let Some(best_size) = args.best_size(levels.iter().filter_map(|l| l.size_hint()))
+                && let Some(pos) = find_level_with_size(&levels, best_size)
+            {
+                return Ok(levels.swap_remove(pos));
             }
 
             level_picker(levels)

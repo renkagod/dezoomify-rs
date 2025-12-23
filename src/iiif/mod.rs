@@ -49,16 +49,16 @@ pub fn determine_title(image_info: &manifest_types::ExtractedImageInfo) -> Optio
         parts.push(manifest_label.as_str());
     }
 
-    if let Some(metadata_title) = &image_info.metadata_title {
-        if !parts.contains(&metadata_title.as_str()) {
-            parts.push(metadata_title.as_str());
-        }
+    if let Some(metadata_title) = &image_info.metadata_title
+        && !parts.contains(&metadata_title.as_str())
+    {
+        parts.push(metadata_title.as_str());
     }
 
-    if let Some(canvas_label) = &image_info.canvas_label {
-        if !parts.contains(&canvas_label.as_str()) {
-            parts.push(canvas_label.as_str());
-        }
+    if let Some(canvas_label) = &image_info.canvas_label
+        && !parts.contains(&canvas_label.as_str())
+    {
+        parts.push(canvas_label.as_str());
     }
 
     if parts.is_empty() {
@@ -98,47 +98,46 @@ impl Dezoomer for IIIF {
 
         // First, try to determine what type of IIIF content this is by doing a quick parse
         // to check the "type" field without generating warnings
-        if let Ok(quick_check) = serde_json::from_slice::<serde_json::Value>(contents) {
-            if let Some(type_value) = quick_check.get("type").or_else(|| quick_check.get("@type")) {
-                if let Some(type_str) = type_value.as_str() {
-                    match type_str {
-                        "ImageService2" | "ImageService3" | "iiif:ImageProfile" => {
-                            // This is clearly an Image Service info.json, try parsing it directly
-                            match zoom_levels(uri, contents) {
-                                Ok(levels) => {
-                                    let image = IIIFZoomableImage::new(levels, None);
-                                    return Ok(dezoomer_result_from_single_image(image));
-                                }
-                                Err(e) => return Err(e.into()),
-                            }
+        if let Ok(quick_check) = serde_json::from_slice::<serde_json::Value>(contents)
+            && let Some(type_value) = quick_check.get("type").or_else(|| quick_check.get("@type"))
+            && let Some(type_str) = type_value.as_str()
+        {
+            match type_str {
+                "ImageService2" | "ImageService3" | "iiif:ImageProfile" => {
+                    // This is clearly an Image Service info.json, try parsing it directly
+                    match zoom_levels(uri, contents) {
+                        Ok(levels) => {
+                            let image = IIIFZoomableImage::new(levels, None);
+                            return Ok(dezoomer_result_from_single_image(image));
                         }
-                        "Manifest" => {
-                            // This is clearly a manifest, try parsing it as such
-                            match parse_iiif_manifest_from_bytes(contents, uri) {
-                                Ok(image_infos) if !image_infos.is_empty() => {
-                                    let image_urls: Vec<ZoomableImageUrl> = image_infos
-                                        .into_iter()
-                                        .map(|image_info| {
-                                            let title = determine_title(&image_info);
-                                            ZoomableImageUrl {
-                                                url: image_info.image_uri,
-                                                title,
-                                            }
-                                        })
-                                        .collect();
-
-                                    return Ok(dezoomer_result_from_urls(image_urls));
-                                }
-                                Ok(_) => {
-                                    // Empty image_infos, fall through to heuristic approach
-                                }
-                                Err(e) => return Err(e.into()),
-                            }
-                        }
-                        _ => {
-                            // Unknown type, fall through to heuristic detection below
-                        }
+                        Err(e) => return Err(e.into()),
                     }
+                }
+                "Manifest" => {
+                    // This is clearly a manifest, try parsing it as such
+                    match parse_iiif_manifest_from_bytes(contents, uri) {
+                        Ok(image_infos) if !image_infos.is_empty() => {
+                            let image_urls: Vec<ZoomableImageUrl> = image_infos
+                                .into_iter()
+                                .map(|image_info| {
+                                    let title = determine_title(&image_info);
+                                    ZoomableImageUrl {
+                                        url: image_info.image_uri,
+                                        title,
+                                    }
+                                })
+                                .collect();
+
+                            return Ok(dezoomer_result_from_urls(image_urls));
+                        }
+                        Ok(_) => {
+                            // Empty image_infos, fall through to heuristic approach
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
+                }
+                _ => {
+                    // Unknown type, fall through to heuristic detection below
                 }
             }
         }

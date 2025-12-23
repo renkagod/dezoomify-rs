@@ -125,20 +125,20 @@ fn parse_text_urls(content: &str) -> Result<Vec<ZoomableImageUrl>, BulkTextError
 /// Extract a title from a URL for better identification
 fn extract_title_from_url(url: &str, line_number: usize) -> Option<String> {
     // Try to extract filename from URL
-    if let Ok(parsed_url) = url::Url::parse(url) {
-        if let Some(segments) = parsed_url.path_segments() {
-            let segments: Vec<&str> = segments.collect();
-            if let Some(last_segment) = segments.iter().rev().find(|s| !s.is_empty()) {
-                // Remove file extension for a cleaner title
-                let title = if let Some(dot_pos) = last_segment.rfind('.') {
-                    &last_segment[..dot_pos]
-                } else {
-                    last_segment
-                };
+    if let Ok(parsed_url) = url::Url::parse(url)
+        && let Some(segments) = parsed_url.path_segments()
+    {
+        let segments: Vec<&str> = segments.collect();
+        if let Some(last_segment) = segments.iter().rev().find(|s| !s.is_empty()) {
+            // Remove file extension for a cleaner title
+            let title = if let Some(dot_pos) = last_segment.rfind('.') {
+                &last_segment[..dot_pos]
+            } else {
+                last_segment
+            };
 
-                if !title.is_empty() {
-                    return Some(title.to_string());
-                }
+            if !title.is_empty() {
+                return Some(title.to_string());
             }
         }
     }

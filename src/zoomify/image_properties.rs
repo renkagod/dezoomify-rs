@@ -77,10 +77,10 @@ impl ImageProperties {
                     break;
                 }
                 size = self.size() / level_size_ratio;
-                if size.x % 2 != 0 {
+                if !size.x.is_multiple_of(2) {
                     size.x += 1
                 }
-                if size.y % 2 != 0 {
+                if !size.y.is_multiple_of(2) {
                     size.y += 1
                 }
                 level_size_ratio = level_size_ratio * Vec2d { x: 2, y: 2 };
