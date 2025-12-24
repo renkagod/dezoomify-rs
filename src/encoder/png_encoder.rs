@@ -27,8 +27,8 @@ impl PngEncoder {
 
         let compression_level = match compression {
             0..=19 => png::Compression::Fast,
-            20..=60 => png::Compression::Default,
-            _ => png::Compression::Best,
+            20..=60 => png::Compression::Balanced,
+            _ => png::Compression::High,
         };
 
         Ok(PngEncoder {
@@ -51,12 +51,9 @@ impl PngEncoder {
             .expect("File should be available when writing header");
 
         let writer = if icc_profile.is_some() || exif_metadata.is_some() {
-            let mut info = png::Info::default();
-            info.width = self.size.x;
-            info.height = self.size.y;
+            let mut info = png::Info::with_size(self.size.x, self.size.y);
             info.color_type = png::ColorType::Rgb;
             info.bit_depth = png::BitDepth::Eight;
-            info.compression = self.compression;
 
             if let Some(profile) = icc_profile {
                 info.icc_profile = Some(Cow::Owned(profile.clone()));
@@ -74,7 +71,9 @@ impl PngEncoder {
                 );
             }
 
-            png::Encoder::with_info(file, info)?
+            let mut encoder = png::Encoder::with_info(file, info)?;
+            encoder.set_compression(self.compression);
+            encoder
                 .write_header()?
                 .into_stream_writer_with_size(128 * 1024)?
         } else {
@@ -212,14 +211,14 @@ mod tests {
 
         // Verify the ICC profile was actually written to the PNG
         let file = std::fs::File::open(&destination).unwrap();
-        let decoder = png::Decoder::new(file);
+        let decoder = png::Decoder::new(std::io::BufReader::new(file));
         let reader = decoder.read_info().unwrap();
         let info = reader.info();
 
         // Check that ICC profile exists and matches what we provided
         assert!(info.icc_profile.is_some());
         if let Some(embedded_profile) = &info.icc_profile {
-            assert_eq!(embedded_profile.as_ref(), &icc_profile);
+            assert_eq!(embedded_profile.as_ref(), icc_profile.as_slice());
         }
     }
 
@@ -294,14 +293,14 @@ mod tests {
 
         // Verify metadata was written (ICC profile works, EXIF has known issues)
         let file = std::fs::File::open(&destination).unwrap();
-        let decoder = png::Decoder::new(file);
+        let decoder = png::Decoder::new(std::io::BufReader::new(file));
         let reader = decoder.read_info().unwrap();
         let info = reader.info();
 
         // ICC profile should work correctly
         assert!(info.icc_profile.is_some());
         if let Some(embedded_profile) = &info.icc_profile {
-            assert_eq!(embedded_profile.as_ref(), &icc_profile);
+            assert_eq!(embedded_profile.as_ref(), icc_profile.as_slice());
         }
 
         // NOTE: EXIF metadata test is currently skipped due to limitations in the PNG crate.
