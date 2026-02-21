@@ -62,6 +62,7 @@ impl FromRgba for Rgb<u8> {
     }
 }
 
+#[allow(clippy::panicking_unwrap)] // https://github.com/rust-lang/rust-clippy/issues/16188
 impl<Pix: Pixel<Subpixel = u8> + PixelWithColorType + Send + FromRgba + 'static> Encoder
     for Canvas<Pix>
 {
